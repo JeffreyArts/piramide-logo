@@ -6,10 +6,12 @@ class Piramide {
         this.options = {
             x: options.x || 0,
             y: options.y || 0,
+            size: options.size || 200,
+            width: options.width || 400,
+            height: options.height || 400,
             vertexScale: options.vertexScale || 1,
             color: options.color || "black",
             lineWidth: options.lineWidth || 2,
-            radius: options.radius || 5,
             ball: {
                 x: options.ball?.x || 0,
                 y: options.ball?.y || 0,
@@ -24,13 +26,13 @@ class Piramide {
             },
         };
 
+        this.canvas.width = this.options.width
+        this.canvas.height = this.options.height
+        const basePoints = this.calculateIsoscelesTriangle(this.options.size)
+
         // Piramidepunten en lijnen
-        this.points3D = {
-            A: { x: -100, y: 100, z: 0 },
-            B: { x: 100, y: 100, z: 0 },
-            C: { x: 0, y: -100, z: 0 },
-            D: { x: 0, y: 0, z: 150 },
-        };
+        this.createPyramid(this.options.size)
+        this.points3D = {...this.originPoints3D};
 
         this.lines = [
             ["A", "B"], ["B", "C"], ["C", "A"], // Basis
@@ -39,9 +41,9 @@ class Piramide {
 
         // Bal in het midden
         this.ball = {
-            x: this.options.ball.x,
-            y: this.options.ball.y,
-            z: options.radius,
+            x: 0,
+            y: 0,
+            z: (this.points3D.A.z + this.points3D.D.z) / 2,
             radius: this.options.ball.radius,
             color: this.options.ball.color,
         };
@@ -66,6 +68,37 @@ class Piramide {
         this.animate();
     }
 
+    createPyramid(size) {
+        const height = (Math.sqrt(3) / 2) * size;
+        // Bereken de basisdriehoek in het xy-vlak
+        this.originPoints3D = {
+            A: { x: size * Math.cos(0), y: size * Math.sin(0), z: 0 },
+            B: { x: size * Math.cos((2 * Math.PI) / 3), y: size * Math.sin((2 * Math.PI) / 3), z: 0 },
+            C: { x: size * Math.cos((4 * Math.PI) / 3), y: size * Math.sin((4 * Math.PI) / 3), z: 0 },
+            D: { x: 0, y: 0, z: height }, // Top van de piramide
+        };
+    
+        // // Definieer de lijnen (kanten van de piramide)
+        // this.lines = [
+        //     ["A", "B"], ["B", "C"], ["C", "A"], // Basis
+        //     ["A", "D"], ["B", "D"], ["C", "D"], // Zijden
+        // ];
+    
+        // return { originPoints3D, lines };
+    }
+    
+    calculateIsoscelesTriangle(size) {
+        const points = [];
+        const angleIncrement = (2 * Math.PI) / 3; // 120 graden in radialen
+        for (let i = 0; i < 3; i++) {
+            const angle = i * angleIncrement; // Hoeken: 0, 120, 240 graden
+            const x = size * Math.cos(angle);
+            const y = size * Math.sin(angle);
+            points.push({ x, y });
+        }
+        return points;
+    }
+    
     // Rotatiefuncties
     rotateX(point, angle) {
         const rad = angle * (Math.PI / 180);
@@ -115,7 +148,7 @@ class Piramide {
 
     drawBackground() {
         this.ctx.beginPath();
-        this.ctx.arc(200, 200, this.background.radius, 0, 2 * Math.PI);
+        this.ctx.arc(this.canvas.width/2, this.canvas.height/2, this.background.radius, 0, 2 * Math.PI);
         if (this.background.color) {
             this.ctx.fillStyle = this.background.color
             this.ctx.fill();
@@ -151,9 +184,9 @@ class Piramide {
     }
 
     updateRotation() {
-        const center = this.calculateCenter(this.points3D);
-        for (const key in this.points3D) {
-            let point = this.points3D[key];
+        const center = this.calculateCenter(this.originPoints3D);
+        for (const key in this.originPoints3D) {
+            let point = this.originPoints3D[key];
     
             // Verplaats naar origin (midden)
             point.x -= center.x;
@@ -193,15 +226,18 @@ class Piramide {
             this.drawLine(projectedPoints[p1], projectedPoints[p2]);
         });
     
-        // Teken de vertices
+        // Teken de 1e laag vertices
         for (const key in this.points3D) {
             const point = this.points3D[key];
             const projected = projectedPoints[key];
-    
-            this.ctx.beginPath();
-            this.ctx.arc(projected.x, projected.y, (this.lineWidth / 2) * this.vertexScale, 0, 2 * Math.PI);
-            this.ctx.fillStyle = this.strokeStyle;
-            this.ctx.fill();
+            // if ((point.x < this.ball.x - this.ball.radius || point.x > this.ball.x + this.ball.radius) || 
+            //     point.y < this.ball.y - this.ball.radius || point.y > this.ball.y + this.ball.radius
+            // ) {
+                this.ctx.beginPath();
+                this.ctx.arc(projected.x, projected.y, (this.lineWidth / 2) * this.vertexScale, 0, 2 * Math.PI);
+                this.ctx.fillStyle = this.strokeStyle;
+                this.ctx.fill();
+            // }
         }
 
         // Teken de bal
@@ -211,13 +247,14 @@ class Piramide {
         for (const key in this.points3D) {
             const point = this.points3D[key];
             const projected = projectedPoints[key];
-            if (point.z > this.ball.radius) {
+            if (point.z > this.ball.z) {
                 this.ctx.beginPath();
                 this.ctx.arc(projected.x, projected.y, (this.lineWidth / 2) * this.vertexScale, 0, 2 * Math.PI);
                 this.ctx.fillStyle = this.strokeStyle;
                 this.ctx.fill();
             }
         }
+        // throw new Error("")
 
         // Optioneel: Lijnen opnieuw tekenen die boven de bal moeten liggen
         this.lines.forEach(([p1, p2]) => {
@@ -226,10 +263,47 @@ class Piramide {
             const avgZ = (startPoint.z + endPoint.z) / 2;
             
             // Herteken de lijn alleen als de lijn voor de bal ligt (z-waarde groter dan de bal)
-            if ((avgZ > this.ball.radius) || startPoint.z > this.ball.radius && endPoint.z > this.ball.radius) {
+            if (this.doesLineIntersectSphere(startPoint, endPoint, this.ball)) {
+
                 this.drawLine(projectedPoints[p1], projectedPoints[p2]);
             }
         });
+    }
+    doesLineIntersectSphere(lineStart, lineEnd, ball) {
+        // Vectoren berekenen
+        const d = {
+            x: lineEnd.x - lineStart.x,
+            y: lineEnd.y - lineStart.y,
+            z: lineEnd.z - lineStart.z,
+        };
+        const v = {
+            x: ball.x - lineStart.x,
+            y: ball.y - lineStart.y,
+            z: ball.z - lineStart.z,
+        };
+        
+        // Projectie van v op d
+        const dDotD = d.x * d.x + d.y * d.y + d.z * d.z;
+        const vDotD = v.x * d.x + v.y * d.y + v.z * d.z;
+        let t = vDotD / dDotD;
+        
+        // Beperk t tot het bereik [0, 1]
+        t = Math.max(0, Math.min(1, t));
+        
+        // Bereken het dichtstbijzijnde punt op de lijn
+        const closestPoint = {
+            x: lineStart.x + t * d.x,
+            y: lineStart.y + t * d.y,
+            z: lineStart.z + t * d.z,
+        };
+        
+        // Bereken de afstand van het dichtstbijzijnde punt tot het middelpunt van de bol
+        const distSquared = 
+        (closestPoint.x - ball.x) ** 2 +
+        (closestPoint.y - ball.y) ** 2 +
+        (closestPoint.z - ball.z) ** 2;
+        // Controleer of de afstand kleiner is dan of gelijk aan de straal van de bol
+        return distSquared <= (ball.radius*2) ** 2;
     }
 
     // Methode om de rotatiehoeken bij te werken
