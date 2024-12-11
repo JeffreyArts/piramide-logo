@@ -1,33 +1,34 @@
 
-const canvas4 = document.createElement("canvas")
-canvas4.id = "pyramidCanvas4"
-document.body.appendChild(canvas4)
+const canvas11 = document.createElement("canvas")
+canvas11.id = "pyramidCanvas11"
+canvas11.style["grid-column"] = "1/6"
+document.body.appendChild(canvas11)
 
 
-const piramide4 = new Piramide(canvas4, {
+const piramide11 = new Piramide(canvas11, {
     x: 0,
     y: 0,
-    width: 400,
-    height: 400,
-    size: 96,
-    color: "#fff",
-    lineWidth: 4,
+    width: 1024,
+    height: 1024,
+    size: 400,
+    color: "#ced3f2",
+    lineWidth: 12,
     vertexScale: 3.2,
     ball: { 
-        color: "#ffee64",
-        radius: 32,
+        color: "#e85a4f",
+        radius: 128,
     },
         background: {
-        radius: 128,
-        color: "#111",
-        strokeStyle: "#fff",
-        // lineWidth: 10,
+        radius: 500,
+        color: "#22253d",
+        strokeStyle: "#ced3f2",
+        // lineWidth: 11,
     }
 });
 
 // Rotatie instellen
 
-gsap.to(piramide4, {
+gsap.to(piramide11, {
     duration: 8, // Adjust the duration as needed for the speed of the circle
     repeat: -1,  // Infinite loop
     angleX: 360, // Rotate the ball 360 d/egrees
@@ -36,12 +37,12 @@ gsap.to(piramide4, {
     ease: "none",  // No easing so that the motion remains constant
 });
 
-gsap.to(piramide4.ball, {
+gsap.to(piramide11.ball, {
     duration: 1.5, // Adjust the duration as needed for the speed of the circle
     repeat: -1,  // Infinite loop
     rotation: 360, // Rotate the ball 360 degrees
     yoyo: true,
-    radius: 36,
+    radius: 96,
     ease: "circle.inOut",  // No easing so that the motion remains constant
 });
 

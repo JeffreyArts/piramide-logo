@@ -28,7 +28,7 @@ const piramide3 = new Piramide(canvas3, {
 });
 
 // Rotatie instellen
-piramide3.setRotation({ x: 0, y: 0, z: 0 }); // Stel de rotatiehoek in
+piramide3.setRotation({ x: 90, y: 0, z: 0 }); // Stel de rotatiehoek in
 gsap.to(piramide3, {
     duration: 8, // Adjust the duration as needed for the speed of the circle
     repeat: -1,  // Infinite loop

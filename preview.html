@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piramide logo</title>
+    <script src="./piramide.js"></script>
+    <script src="./gsap.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            min-width: 100vw;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            width: 640px;
+            height: 640px;
+        }
+        .buttons {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .angle-label {
+            display: inline-block;
+            width: 64px;
+        }
+        .angle-label + input {
+            display: inline-block;
+            width: 80px;
+            translate: 0 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="buttons">
+        <button onclick="changePos('top')">Top</button>
+        <button onclick="changePos('right')">Right</button>
+        <button onclick="changePos('bottom')">Bottom</button>
+        <button onclick="changePos('left')">Left</button><br>
+        <label>
+            <strong class="angle-label">Angle X:</strong>
+            <input id="angleXSlider" type="range" min="0" max="360" value="0">
+            <input id="angleXInput" type="number" min="0" max="360" value="0">
+        </label><br>
+        <label>
+            <strong class="angle-label">Angle Y:</strong>
+            <input id="angleYSlider" type="range" min="0" max="360" value="0">
+            <input id="angleYInput" type="number" min="0" max="360" value="0">
+        </label><br>
+        <label>
+            <strong class="angle-label">Angle Z:</strong>
+            <input id="angleZSlider" type="range" min="0" max="360" value="0">
+            <input id="angleZInput" type="number" min="0" max="360" value="0">
+        </label>
+    </div>
+    <script src="./preview.js"></script>
+    <script>
+        // Get slider and input elements
+        const angleXSlider = document.getElementById('angleXSlider');
+        const angleYSlider = document.getElementById('angleYSlider');
+        const angleZSlider = document.getElementById('angleZSlider');
+
+        const angleXInput = document.getElementById('angleXInput');
+        const angleYInput = document.getElementById('angleYInput');
+        const angleZInput = document.getElementById('angleZInput');
+
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        // Function to handle rotation based on mouse/touch movement
+        const rotateModel = (deltaX, deltaY) => {
+            const sensitivity = 0.5; // Control how fast the model rotates
+            piramidePreview.angleY += deltaX * sensitivity;
+            piramidePreview.angleX += deltaY * sensitivity;
+
+            // Update the model's rotation in the preview
+            gsap.to(piramidePreview, {
+                duration: 0,
+                angleX: piramidePreview.angleX,
+                angleY: piramidePreview.angleY,
+                angleZ: piramidePreview.angleZ,
+                onUpdate() {
+                    angleXInput.value = piramidePreview.angleX;
+                    angleYInput.value = piramidePreview.angleY;
+                    angleZInput.value = piramidePreview.angleZ;
+
+                    angleXSlider.value = piramidePreview.angleX;
+                    angleYSlider.value = piramidePreview.angleY;
+                    angleZSlider.value = piramidePreview.angleZ;
+                },
+                ease: "none"
+            });
+        };
+
+        // Mouse event listeners
+        const onMouseDown = (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            e.preventDefault(); // Prevent text selection or other default actions
+        };
+
+        const onMouseMove = (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                rotateModel(deltaX, deltaY);
+                startX = e.clientX;
+                startY = e.clientY;
+            }
+        };
+
+        const onMouseUp = () => {
+            isDragging = false;
+        };
+
+        // Touch event listeners
+        const onTouchStart = (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            e.preventDefault(); // Prevent scrolling
+        };
+
+        const onTouchMove = (e) => {
+            if (isDragging) {
+                const deltaX = e.touches[0].clientX - startX;
+                const deltaY = e.touches[0].clientY - startY;
+                rotateModel(deltaX, deltaY);
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            }
+        };
+
+        const onTouchEnd = () => {
+            isDragging = false;
+        };
+
+        // Add event listeners for mouse and touch events
+        const canvas = document.querySelector('canvas');
+        canvas.addEventListener('mousedown', onMouseDown);
+        canvas.addEventListener('mousemove', onMouseMove);
+        canvas.addEventListener('mouseup', onMouseUp);
+        canvas.addEventListener('mouseleave', onMouseUp); // For cases when mouse leaves canvas
+
+        canvas.addEventListener('touchstart', onTouchStart);
+        canvas.addEventListener('touchmove', onTouchMove);
+        canvas.addEventListener('touchend', onTouchEnd);
+        canvas.addEventListener('touchcancel', onTouchEnd);
+
+        // Synchronize sliders and inputs
+        function syncSliderWithInput(slider, input, updateFunction) {
+            // Update the input field when the slider changes
+            slider.addEventListener('input', () => {
+                input.value = slider.value; // Sync input with slider
+                updateFunction(parseInt(slider.value, 10)); // Update Piramide angle
+            });
+
+            // Update the slider when the input field changes
+            input.addEventListener('input', () => {
+                let value = parseInt(input.value, 10);
+
+                // Clamp the value within the slider's range
+                if (value < slider.min) value = parseInt(slider.min, 10);
+                if (value > slider.max) value = parseInt(slider.max, 10);
+
+                slider.value = value; // Sync slider with input
+                input.value = value; // Ensure valid value is displayed
+                updateFunction(value); // Update Piramide angle
+            });
+        }
+
+        // Use the helper function to connect sliders and inputs
+        syncSliderWithInput(angleXSlider, angleXInput, (value) => {
+            piramidePreview.angleX = value;
+        });
+
+        syncSliderWithInput(angleYSlider, angleYInput, (value) => {
+            piramidePreview.angleY = value;
+        });
+
+        syncSliderWithInput(angleZSlider, angleZInput, (value) => {
+            piramidePreview.angleZ = value;
+        });
+    </script>
+</body>
+</html>
