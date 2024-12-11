@@ -19,6 +19,8 @@ class Piramide {
             background: {
                 radius: options.background?.radius || 0,
                 color: options.background?.color || "rgba(255,255,255,0)",
+                strokeStyle: options.background?.strokeStyle || "",
+                lineWidth: options.background?.lineWidth || 0,
             },
         };
 
@@ -47,6 +49,8 @@ class Piramide {
         this.background = {
             radius: this.options.background.radius,
             color: this.options.background.color,
+            lineWidth: this.options.background.lineWidth,
+            strokeStyle: this.options.background.strokeStyle,
         };
 
         // Piramide styling
@@ -112,8 +116,17 @@ class Piramide {
     drawBackground() {
         this.ctx.beginPath();
         this.ctx.arc(200, 200, this.background.radius, 0, 2 * Math.PI);
-        this.ctx.fillStyle = this.background.color ? this.background.color : this.ball.color;
-        this.ctx.fill();
+        if (this.background.color) {
+            this.ctx.fillStyle = this.background.color
+            this.ctx.fill();
+        }
+        if (this.background.lineWidth) {
+            this.ctx.lineWidth = this.background.lineWidth
+        }
+        if (this.background.strokeStyle) {
+            this.ctx.strokeStyle = this.background.strokeStyle
+            this.ctx.stroke();
+        }
     }
 
     drawBall() {

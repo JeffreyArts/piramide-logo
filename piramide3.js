@@ -11,20 +11,31 @@ const ctx3 = canvas3.getContext('2d');
 const piramide3 = new Piramide(canvas3, {
     x: 0,
     y: 0,
-    color: "#ffffff",
+    color: "#ffffe5",
     lineWidth: 4,
-    vertexScale: 1,
+    vertexScale: 4,
     ball: { 
-        color: "#c9ff22",
+        color: "#d6052c",
         radius: 32,
-        y: 10
     },
     background: {
         radius: 150,
-        color: "#111"
+        color: "#111",
+        strokeStyle: "#111",
+        lineWidth: 4,
     }
 });
 
 // Rotatie instellen
-piramide3.setRotation({ x: 0, y: 0, z: 2 }); // Stel de rotatiehoek in
+piramide3.setRotation({ x: 0.1, y: 0.1, z: 0 }); // Stel de rotatiehoek in
+
+gsap.to(piramide3.ball, {
+    duration: 1, // Adjust the duration as needed for the speed of the circle
+    repeat: -1,  // Infinite loop
+    rotation: 360, // Rotate the ball 360 degrees
+    yoyo: true,
+    radius: 40,
+    ease: "circle.inOut",  // No easing so that the motion remains constant
+});
+
 
