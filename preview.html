@@ -71,8 +71,56 @@
         let startX = 0;
         let startY = 0;
 
+        const changePos = (angle) => {
+            let angleX = angle
+            let angleY = angle
+            let angleZ = angle
+            if (typeof angle == "string") {
+                if (angle == "left") {
+                    angleX = 180
+                    angleY = 180
+                    angleZ = 0
+                }
+                if (angle == "right") {
+                    angleX = 180
+                    angleY = 360
+                    angleZ = 0
+                }
+                if (angle == "top") {
+                    angleX = 180
+                    angleY = 180
+                    angleZ = 90
+                }
+                if (angle == "bottom") {
+                    angleX = 180
+                    angleY = 0
+                    angleZ = 90
+                }
+            }
+            gsap.to(piramidePreview, {
+                duration: 4, // Adjust the duration as needed for the speed of the circle
+                angleX,
+                angleY,
+                angleZ,
+                onUpdate() {
+                    console.log(angleZInput)
+                    if (angleXInput && angleYInput && angleZInput) {
+                        angleXInput.value = piramidePreview.angleX
+                        angleYInput.value = piramidePreview.angleY
+                        angleZInput.value = piramidePreview.angleZ
+                    }
+
+                    if (angleXSlider && angleYSlider && angleZSlider) {
+                        angleXSlider.value = piramidePreview.angleX
+                        angleYSlider.value = piramidePreview.angleY
+                        angleZSlider.value = piramidePreview.angleZ
+                    }
+                },
+                ease: "elastic.out",  // No easing so that the motion remains constant
+            });
+        }
         // Function to handle rotation based on mouse/touch movement
-        const rotateModel = (deltaX, deltaY) => {
+        const rotateModel = (deltaY, deltaX) => {
             const sensitivity = 0.5; // Control how fast the model rotates
             piramidePreview.angleY += deltaX * sensitivity;
             piramidePreview.angleX += deltaY * sensitivity;
