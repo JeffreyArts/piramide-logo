@@ -69,6 +69,16 @@ class Piramide {
         
         this.animate();
     }
+    set size(newSize) {
+        if (this._size !== newSize) {
+            this._size = newSize;
+            this.createPyramid(newSize); // Recreate the pyramid with new size
+        }
+    }
+
+    get size() {
+        return this._size;
+    }
 
     createPyramid(size) {
         const height = (Math.sqrt(3) / 2) * size;

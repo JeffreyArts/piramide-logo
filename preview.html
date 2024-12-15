@@ -20,8 +20,12 @@
         }
         .buttons {
             position: absolute;
-            left: 0;
-            top: 0;
+            left: 8px;
+            top: 8px;
+        }
+        .buttons.__isRight {
+            left: auto;
+            right: 8px;
         }
         .angle-label {
             display: inline-block;
@@ -31,6 +35,40 @@
             display: inline-block;
             width: 80px;
             translate: 0 4px;
+        }
+        .color-input {
+            width: 24px;
+            display: inline-block;
+            padding: 0;
+            height: 24px;
+            border: 0 none transparent;
+            border-radius: 8px;
+        }
+        
+        .number-input {
+            width: 64px;
+            display: inline-block;
+            padding: 0;
+            height: 24px;
+            border: 0 none transparent;
+            text-align: right;
+            border-radius: 8px;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .column {
+            display: flex;
+            flex-flow: column;
+            gap: 8px;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        td:last-child {
+            text-align: right;
         }
     </style>
 </head>
@@ -56,16 +94,116 @@
             <input id="angleZInput" type="number" min="0" max="360" value="0">
         </label>
     </div>
-    <script src="./preview.js"></script>
+
+    <div class="buttons __isRight">
+        <div class="two-columns">
+
+            <table class="column">
+                <tr>
+                    <td>
+                        Bal kleur:
+                    </td>
+                    <td>
+                        <input type="color" id="ballColor" value="#f2403f" class="color-input" >
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Bal radius:
+                    </td>
+                    <td>
+                        <input type="number" id="ballRadius" value="96" class="number-input" >
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Emoji:
+                    </td>
+                    <td>
+                        <input type="text" id="ballEmoji" value="" class="number-input" >
+                    </td>
+                </tr>
+            </table>
+            <table class="column">
+                <tr>
+                    <td>
+                        Lijn kleur:
+                    </td>
+                    <td>
+                        <input type="color" id="lineColor" value="#111424" class="color-input" >
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Lijn size:
+                    </td>
+                    <td>
+                        <input type="number" id="lijnSize" value="20" step="1" class="number-input" >
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Vertex size:
+                    </td>
+                    <td>
+                        <input type="number" id="vertexSize" value="3.2" step="0.1" class="number-input" >
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Piramide size:
+                    </td>
+                    <td>
+                        <input type="number" id="piramideRadius" value="400" step="1" class="number-input" >
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+    <script>
+        const canvasPreview = document.createElement("canvas")
+        canvasPreview.id = "pyramidCanvasPreview"
+        document.body.appendChild(canvasPreview)
+
+
+        const piramidePreview = new Piramide(canvasPreview, {
+            x: 0,
+            y: 0,
+            width: 1024,
+            height: 1024,
+            size: 400,
+            color: "#111424",
+            lineWidth: 20,
+            vertexScale: 3.2,
+            ball: { 
+                color: "#f2403f",
+                radius: 96,
+                // emoji: "🌏"
+            },
+        });
+
+        // Rotatie instellen
+        piramidePreview.angleY = 180
+        piramidePreview.angleZ = 180
+        piramidePreview.angleX = 180
+
+    </script>
     <script>
         // Get slider and input elements
         const angleXSlider = document.getElementById('angleXSlider');
         const angleYSlider = document.getElementById('angleYSlider');
         const angleZSlider = document.getElementById('angleZSlider');
-
+        
         const angleXInput = document.getElementById('angleXInput');
         const angleYInput = document.getElementById('angleYInput');
         const angleZInput = document.getElementById('angleZInput');
+
+        const ballRadius = document.getElementById('ballRadius');
+        const ballEmoji = document.getElementById('ballEmoji');
+        const ballColor = document.getElementById('ballColor');
+        const piramideRadius = document.getElementById('piramideRadius');
+        const lineColor = document.getElementById('lineColor');
 
         let isDragging = false;
         let startX = 0;
@@ -120,10 +258,14 @@
             });
         }
         // Function to handle rotation based on mouse/touch movement
-        const rotateModel = (deltaY, deltaX) => {
+        const rotateModel = (deltaX, deltaY) => {
             const sensitivity = 0.5; // Control how fast the model rotates
             piramidePreview.angleY += deltaX * sensitivity;
             piramidePreview.angleX += deltaY * sensitivity;
+
+            // Adjust Z rotation based on diagonal movement (as an example)
+            const deltaZ = deltaX * 0.2; // Adjust sensitivity for Z-axis
+            piramidePreview.angleZ += deltaZ;
 
             // Update the model's rotation in the preview
             gsap.to(piramidePreview, {
@@ -143,6 +285,7 @@
                 ease: "none"
             });
         };
+
 
         // Mouse event listeners
         const onMouseDown = (e) => {
@@ -199,6 +342,24 @@
         canvas.addEventListener('touchmove', onTouchMove);
         canvas.addEventListener('touchend', onTouchEnd);
         canvas.addEventListener('touchcancel', onTouchEnd);
+
+        
+        ballEmoji.addEventListener('input', ()=> { piramidePreview.ball.emoji = ballEmoji.value });
+        ballRadius.addEventListener('input', ()=> { piramidePreview.ball.radius = ballRadius.value });
+        ballColor.addEventListener('input', ()=> { piramidePreview.ball.color = ballColor.value });
+        lineColor.addEventListener('input', ()=> { piramidePreview.strokeStyle = lineColor.value });
+        piramideRadius.addEventListener('input', ()=> { piramidePreview.size = piramideRadius.value });
+        vertexSize.addEventListener('input', ()=> { piramidePreview.vertexScale = Number(vertexSize.value) });
+        lijnSize.addEventListener('input', ()=> { piramidePreview.lineWidth = Number(lijnSize.value) });
+
+        // Set defaults
+        piramidePreview.ball.emoji = ballEmoji.value
+        piramidePreview.size = piramideRadius.value
+        piramidePreview.ball.radius = ballRadius.value
+        piramidePreview.ball.color = ballColor.value
+        piramidePreview.strokeStyle = lineColor.value
+        piramidePreview.lineWidth = Number(lijnSize.value)
+        piramidePreview.vertexScale = Number(vertexSize.value)
 
         // Synchronize sliders and inputs
         function syncSliderWithInput(slider, input, updateFunction) {
