@@ -17,6 +17,7 @@ class Piramide {
                 y: options.ball?.y || 0,
                 color: options.ball?.color || "red",
                 radius: options.ball?.radius || 50,
+                emoji: options.ball?.emoji, // Voeg de emoji-optie toe
             },
             background: {
                 radius: options.background?.radius || 0,
@@ -46,6 +47,7 @@ class Piramide {
             z: (this.points3D.A.z + this.points3D.D.z) / 2,
             radius: this.options.ball.radius,
             color: this.options.ball.color,
+            emoji: this.options.ball.emoji,
         };
 
         this.background = {
@@ -164,10 +166,20 @@ class Piramide {
 
     drawBall() {
         const { x, y } = this.project(this.ball);
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, this.ball.radius, 0, 2 * Math.PI);
-        this.ctx.fillStyle = this.ball.color;
-        this.ctx.fill();
+        const { emoji, radius } = this.ball;
+
+        if (emoji) {
+            const fontSize = radius * 2; // Emoji grootte gebaseerd op straal
+            this.ctx.font = `${fontSize}px Arial`;
+            this.ctx.textAlign = "center";
+            this.ctx.textBaseline = "middle";
+            this.ctx.fillText(emoji, x, y);
+        } else {
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            this.ctx.fillStyle = this.ball.color;
+            this.ctx.fill();
+        }
     }
 
     sortLines(lines, points) {

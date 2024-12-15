@@ -17,6 +17,7 @@ const piramidePreview = new Piramide(canvasPreview, {
     ball: { 
         color: "#f2403f",
         radius: 96,
+        // emoji: "🌏"
     },
 });
 

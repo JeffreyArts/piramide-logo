@@ -15,8 +15,9 @@ const piramide12 = new Piramide(canvas12, {
     lineWidth: 20,
     vertexScale: 3.2,
     ball: { 
-        color: "#e85a4f",
-        radius: 96,
+        color: "#f2403f",
+        radius: 128,
+        emoji: "👻"
     },
     //     background: {
     //     radius: 500,
